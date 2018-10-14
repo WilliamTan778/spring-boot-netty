@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.module.scene.mapper.SceneMapper">
+    
+    <resultMap type="Scene" id="SceneResult">
+        <result property="sceneId"    column="scene_id"    />
+        <result property="sceneName"    column="scene_name"    />
+        <result property="sceneStatus"    column="scene_status"    />
+        <result property="sceneParams"    column="scene_params"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+	
+	<sql id="selectSceneVo">
+        select scene_id, scene_name, scene_status, scene_params, del_flag, remark, create_by, create_time, update_by, update_time from bu_scene
+    </sql>
+	
+    <select id="selectSceneList" parameterType="Scene" resultMap="SceneResult">
+        <include refid="selectSceneVo"/>
+        <where>  
+            <if test="sceneId != null and sceneId != ''"> and scene_id = #{sceneId}</if>
+             <if test="sceneName != null and sceneName != ''"> and scene_name = #{sceneName}</if>
+             <if test="sceneStatus != null and sceneStatus != ''"> and scene_status = #{sceneStatus}</if>
+             <if test="sceneParams != null and sceneParams != ''"> and scene_params = #{sceneParams}</if>
+             <if test="delFlag != null and delFlag != ''"> and del_flag = #{delFlag}</if>
+             <if test="remark != null and remark != ''"> and remark = #{remark}</if>
+             <if test="createBy != null and createBy != ''"> and create_by = #{createBy}</if>
+             <if test="createTime != null and createTime != ''"> and create_time = #{createTime}</if>
+             <if test="updateBy != null and updateBy != ''"> and update_by = #{updateBy}</if>
+             <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime}</if>
+         </where>
+    </select>
+    
+    <select id="selectSceneById" parameterType="Integer" resultMap="SceneResult">
+        <include refid="selectSceneVo"/>
+        where scene_id = #{sceneId}
+    </select>
+        
+    <insert id="insertScene" parameterType="Scene">
+        insert into bu_scene
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="sceneId != null and sceneId != '' ">scene_id,</if>
+			<if test="sceneName != null and sceneName != '' ">scene_name,</if>
+			<if test="sceneStatus != null and sceneStatus != '' ">scene_status,</if>
+			<if test="sceneParams != null and sceneParams != '' ">scene_params,</if>
+			<if test="delFlag != null and delFlag != '' ">del_flag,</if>
+			<if test="remark != null and remark != '' ">remark,</if>
+			<if test="createBy != null and createBy != '' ">create_by,</if>
+			create_time,
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="sceneId != null and sceneId != ''">#{sceneId},</if>
+			<if test="sceneName != null and sceneName != ''">#{sceneName},</if>
+			<if test="sceneStatus != null and sceneStatus != ''">#{sceneStatus},</if>
+			<if test="sceneParams != null and sceneParams != ''">#{sceneParams},</if>
+			<if test="delFlag != null and delFlag != ''">#{delFlag},</if>
+			<if test="remark != null and remark != ''">#{remark},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+            sysdate(),
+         </trim>
+    </insert>
+	 
+    <update id="updateScene" parameterType="Scene">
+        update bu_scene
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="sceneName != null  and sceneName != ''  ">scene_name = #{sceneName},</if>
+            <if test="sceneStatus != null  and sceneStatus != ''  ">scene_status = #{sceneStatus},</if>
+            <if test="sceneParams != null  and sceneParams != ''  ">scene_params = #{sceneParams},</if>
+            <if test="delFlag != null  and delFlag != ''  ">del_flag = #{delFlag},</if>
+            <if test="remark != null  and remark != ''  ">remark = #{remark},</if>
+            <if test="createBy != null  and createBy != ''  ">create_by = #{createBy},</if>
+            <if test="createTime != null  ">create_time = #{createTime},</if>
+            <if test="updateBy != null  and updateBy != ''  ">update_by = #{updateBy},</if>
+            update_time = sysdate(),
+        </trim>
+        where scene_id = #{sceneId}
+    </update>
+
+	<delete id="deleteSceneById" parameterType="Integer">
+        delete from bu_scene where scene_id = #{sceneId}
+    </delete>
+	
+    <delete id="deleteSceneByIds" parameterType="String">
+        delete from bu_scene where scene_id in 
+        <foreach item="sceneId" collection="array" open="(" separator="," close=")">
+            #{sceneId}
+        </foreach>
+    </delete>
+    
+</mapper>

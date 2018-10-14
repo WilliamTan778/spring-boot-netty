@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.module.deviceLog.mapper.DeviceLogMapper">
+    
+    <resultMap type="DeviceLog" id="DeviceLogResult">
+        <result property="id"    column="id"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="deviceData"    column="device_data"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+	
+	<sql id="selectDeviceLogVo">
+        select id, device_id, device_data, create_time from bu_device_log
+    </sql>
+	
+    <select id="selectDeviceLogList" parameterType="DeviceLog" resultMap="DeviceLogResult">
+        <include refid="selectDeviceLogVo"/>
+        <where>  
+            <if test="id != null and id != ''"> and id = #{id}</if>
+             <if test="deviceId != null and deviceId != ''"> and device_id = #{deviceId}</if>
+             <if test="deviceData != null and deviceData != ''"> and device_data = #{deviceData}</if>
+             <if test="createTime != null and createTime != ''"> and create_time = #{createTime}</if>
+         </where>
+    </select>
+    
+    <select id="selectDeviceLogById" parameterType="String" resultMap="DeviceLogResult">
+        <include refid="selectDeviceLogVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertDeviceLog" parameterType="DeviceLog">
+        insert into bu_device_log
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null and id != '' ">id,</if>
+			<if test="deviceId != null and deviceId != '' ">device_id,</if>
+			<if test="deviceData != null and deviceData != '' ">device_data,</if>
+			<if test="createTime != null and createTime != '' ">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null and id != ''">#{id},</if>
+			<if test="deviceId != null and deviceId != ''">#{deviceId},</if>
+			<if test="deviceData != null and deviceData != ''">#{deviceData},</if>
+			<if test="createTime != null and createTime != ''">#{createTime},</if>
+         </trim>
+    </insert>
+	 
+    <update id="updateDeviceLog" parameterType="DeviceLog">
+        update bu_device_log
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deviceId != null  and deviceId != ''  ">device_id = #{deviceId},</if>
+            <if test="deviceData != null  and deviceData != ''  ">device_data = #{deviceData},</if>
+            <if test="createTime != null  ">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+	<delete id="deleteDeviceLogById" parameterType="String">
+        delete from bu_device_log where id = #{id}
+    </delete>
+	
+    <delete id="deleteDeviceLogByIds" parameterType="String">
+        delete from bu_device_log where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>

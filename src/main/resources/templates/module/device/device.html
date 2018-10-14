@@ -1,0 +1,182 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+    <div class="container-div">
+        <div class="col-sm-12 select-info">
+            <form id="type-form">
+                <div class="select-list">
+                    <ul>
+                        <li>
+                           设备名称：<input type="text" name="deviceName"/>
+                        </li>
+                        <li>
+                            设备端类型：
+                            <select id="deviceTag" th:with="type=${@dict.getType('sys_device_tag')}" onchange="controllerDeviceParam()">
+                                <option value="">所有</option>
+                                 <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </li>
+                        <li>
+                            设备状态：
+                            <select name="status" th:with="type=${@dict.getType('device_is_online')}">
+                                <option value="">所有</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </li>
+                        <li class="select-time">
+                            <label>创建时间： </label>
+                            <input type="text" class="time-input" id="startTime" placeholder="开始时间" name="params[beginTime]"/>
+                            <span>-</span>
+                            <input type="text" class="time-input" id="endTime" placeholder="结束时间" name="params[endTime]"/>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                            <a class="btn btn-success btn-rounded btn-sm" onclick="$.table.exportExcel()" shiro:hasPermission="system:dict:export"><i class="fa fa-download"></i>&nbsp;导出</a>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group hidden-xs" id="toolbar" role="group">
+			<a class="btn btn-outline btn-success btn-rounded" onclick="$.operate.add()" shiro:hasPermission="module:device:add">
+				<i class="fa fa-plus"></i> 新增
+			</a>
+			<a class="btn btn-outline btn-danger btn-rounded" onclick="$.operate.removeAll()" shiro:hasPermission="module:device:remove">
+				<i class="fa fa-trash-o"></i> 删除
+			</a>
+		</div>
+			
+		<div class="col-sm-12 select-table table-striped">
+			<table id="bootstrap-table" data-mobile-responsive="true"></table>
+		</div>
+    </div>
+    <div th:include="include :: footer"></div>
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('module:device:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('module:device:remove')}]];
+        var dstatuss = [[${@dict.getType('device_is_online')}]];
+        var tags = [[${@dict.getType('sys_device_tag')}]];
+        var prefix = ctx + "module/device";
+
+        $(function() {
+            var options = {
+                    url: prefix + "/list",
+                    createUrl: prefix + "/add",
+                    updateUrl: prefix + "/edit/{id}",
+                    removeUrl: prefix + "/remove",
+                    diagramUrl:prefix + "/diagram",
+                    commandUrl:prefix + "/command",
+                    modalName: "设备",
+                    columns: [{
+                        checkbox: true
+                    },
+				{
+					field : 'deviceId', 
+					title : '设备id',
+                    align: 'center'
+				},
+				{
+					field : 'deviceName', 
+					title : '设备名称',
+                    align: 'center'
+				},
+				{
+					field : 'deviceStatus', 
+					title : '设备状态',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(dstatuss, value);
+                    }
+				},
+                {
+                    field : 'deviceTag',
+                     title : '设备端类型',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(tags, value);
+                    }
+                },
+				{
+					field : 'deviceParam',
+					title : '采集参数'
+				},
+				{
+					field : 'deviceGroup.groupId',
+					title : '设备组名称',
+                    align: 'center'
+				},
+                {
+                    field : 'deviceScreenId',
+                    title : '场景名称',
+                    align: 'center'
+                },
+				{
+					field : 'createBy', 
+					title : '创建人' ,
+                    align: 'center'
+				},
+				{
+					field : 'createTime', 
+					title : '创建时间',
+                    align: 'center'
+				},
+		        {
+		            title: '操作',
+		            align: 'center',
+		            formatter: function(value, row, index) {
+		            	var actions = [];
+                            actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="#" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>设备分组</a> ');
+                            actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="#" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                            if(row.deviceTag=="1"){
+                                 actions.push('<a class="btn btn-info btn-xs ' + editFlag + '" href="#" onclick="showDeviceDiagram(\'' + row.id + '\')"><i class="fa fa-list-ul"></i>采集终端</a> ');
+                            }else{
+                                 actions.push('<a class="btn btn-warning btn-xs ' + removeFlag + '" href="#" onclick="sendDeviceCommond(\'' + row.id + '\')"><i class="fa fa-list-ul"></i>控制终端</a>');
+                            }
+                          return actions.join('');
+		            }
+		        }]
+            };
+            $.table.init(options);
+        })
+
+        function showDeviceDiagram(id){
+            console.log(id);
+            var width = 800;
+            var height = 400;
+            layer.open({
+                type: 2,
+                area: [width + 'px', height + 'px'],
+                fix: false,
+                //不固定
+                maxmin: true,
+                shade: 0.3,
+                title: "数据显示端",
+                content: prefix + "/diagram",
+                // 弹层外区域关闭
+                shadeClose: true
+            });
+        }
+        function sendDeviceCommond(id){
+            console.log(id);
+            var width = 200;
+            var height = 180;
+            layer.open({
+                type: 2,
+                area: [width + 'px', height + 'px'],
+                fix: false,
+                //不固定
+                maxmin: true,
+                shade: 0.3,
+                title: "命令控制端",
+                content: prefix + "/command",
+                // 弹层外区域关闭
+                shadeClose: true
+            });
+        }
+
+    </script>
+</body>
+</html>

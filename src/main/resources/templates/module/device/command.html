@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content"  >
+        <form class="form-horizontal m" id="form-device-edit" >
+            <div class="form-group draggable">
+                <label class="col-sm-3 control-label">控制端设备
+                </label>
+                <div class="col-sm-9">
+                    <div class="onoffswitch">
+                        <input type="checkbox" th:checked="true" class="onoffswitch-checkbox" id="status" name="status">
+                        <label class="onoffswitch-label" for="status">
+                            <span class="onoffswitch-inner"></span>
+                            <span class="onoffswitch-switch"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+	</div>
+    <div th:include="include::footer"></div>
+</body>
+</html>

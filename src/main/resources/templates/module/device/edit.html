@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-device-edit" th:object="${device}">
+            <input id="id" name="id" th:field="*{id}"  type="hidden">
+            <div class="form-group">	
+                <label class="col-sm-3 control-label">设备id：</label>
+                <div class="col-sm-8">
+                    <input id="deviceId" name="deviceId" th:field="*{deviceId}" class="form-control" readonly="readonly" type="text">
+                </div>
+            </div>
+            <div class="form-group">	
+                <label class="col-sm-3 control-label">设备名称：</label>
+                <div class="col-sm-8">
+                    <input id="deviceName" name="deviceName" th:field="*{deviceName}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">	
+                <label class="col-sm-3 control-label">设备分组</label>
+                <div class="col-sm-8">
+                        <select id="deviceGroupId" name="deviceGroupId" class="form-control">
+                            <option value="">-------请选择设备所在组-------</option>
+                            <option th:each="group:${groups}" th:value="${group.groupId}" th:text="${group.groupName}" th:selected="(${group.groupId} == ${device.deviceGroupId})" th:disabled="${group.status == '1'}"></option>
+                        </select>
+                </div>
+            </div>
+			<div class="form-group">
+				<div class="form-control-static col-sm-offset-9">
+					<button type="submit" class="btn btn-primary">提交</button>
+					<button onclick="$.modal.close()" class="btn btn-danger" type="button">关闭</button>
+				</div>
+			</div>
+		</form>
+    </div>
+    <div th:include="include::footer"></div>
+    <script type="text/javascript">
+
+		var prefix = ctx + "module/device"
+
+		$("#form-device-edit").validate({
+			rules:{
+                deviceGroupId:{
+					required:true,
+				},
+			},
+			submitHandler: function(form){
+				$.operate.save(prefix + "/edit", $('#form-device-edit').serialize());
+			}
+		});
+
+	</script>
+</body>
+</html>

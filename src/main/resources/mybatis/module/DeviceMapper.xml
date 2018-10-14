@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.module.device.mapper.DeviceMapper">
+    
+    <resultMap type="Device" id="DeviceResult">
+        <result property="id"    column="id"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="deviceName"    column="device_name"    />
+        <result property="deviceStatus"    column="device_status"    />
+        <result property="deviceType"    column="device_type"    />
+        <result property="deviceTag"    column="device_tag"    />
+        <result property="deviceGroupId"    column="device_group_id"    />
+        <result property="deviceParam"    column="device_param"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="remark"    column="remark"    />
+        <association property="deviceGroup"  column="device_group_id" javaType="DeviceGroup" resultMap="deviceGroupResult" />
+    </resultMap>
+
+    <resultMap id="deviceGroupResult" type="DeviceGroup">
+        <id     property="groupId"   column="group_id"     />
+        <result property="parentId" column="parent_id"   />
+        <result property="groupName" column="group_name"   />
+        <result property="orderNum" column="order_num"   />
+        <result property="status"   column="status" />
+    </resultMap>
+	
+	<sql id="selectDeviceVo">
+        select d.id, d.device_id, d.device_name, d.device_status, d.device_type,d.device_tag, d.device_group_id,d.device_param, d.create_by, d.create_time, d.update_by, d.update_time, d.del_flag ,d.remark
+              ,g.group_id,g.parent_id,g.group_name,g.order_num,g.status
+              from bu_device d
+        left join bu_device_group g on d.device_group_id = g.group_id
+    </sql>
+	
+    <select id="selectDeviceList" parameterType="Device" resultMap="DeviceResult">
+        select d.id, d.device_id, d.device_name, d.device_status, d.device_type,d.device_tag, d.device_group_id,d.device_param, d.create_by, d.create_time, d.update_by, d.update_time, d.del_flag ,d.remark
+          ,g.group_id,g.parent_id,g.group_name,g.order_num,g.status
+          from bu_device d
+        left join bu_device_group g on d.device_group_id = g.group_id
+        where d.del_flag='0'
+        <if test="deviceId != null and deviceId != ''">
+            AND d.device_id like concat('%', #{deviceId}, '%')
+        </if>
+        <if test="deviceName != null and deviceName != ''">
+            AND d.device_name like concat('%', #{deviceName}, '%')
+        </if>
+        <if test="deviceTag != null and deviceTag != ''">
+            AND d.device_tag = #{deviceTag}
+        </if>
+        <if test="deviceStatus != null and deviceStatus != ''">
+            AND d.device_status = #{deviceStatus}
+        </if>
+        <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+            AND date_format(d.create_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+        </if>
+        <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+            AND date_format(d.create_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+        </if>
+        <if test="deviceGroupId != null and deviceGroupId != 0">
+            AND (d.device_group_id = #{deviceGroupId} OR d.device_group_id IN ( SELECT t.group_id FROM bu_device_group t WHERE FIND_IN_SET (#{deviceGroupId},ancestors) ))
+        </if>
+        ${params.dataScope}
+    </select>
+    
+    <select id="selectDeviceById" parameterType="Long" resultMap="DeviceResult">
+        <include refid="selectDeviceVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertDevice" parameterType="Device">
+        insert into bu_device
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null and id != '' ">id,</if>
+			<if test="deviceId != null and deviceId != '' ">device_id,</if>
+			<if test="deviceName != null and deviceName != '' ">device_name,</if>
+			<if test="deviceStatus != null and deviceStatus != '' ">device_status,</if>
+			<if test="deviceType != null and deviceType != '' ">device_type,</if>
+            <if test="deviceTag != null and deviceTag != '' ">device_tag,</if>
+            <if test="deviceGroupId != null and deviceGroupId != '' ">device_group_id,</if>
+            <if test="deviceParam != null and deviceParam != '' ">device_param,</if>
+            <if test="createBy != null and createBy != '' ">create_by,</if>
+			<if test="delFlag != null and delFlag != '' ">del_flag,</if>
+            <if test="remark != null and remark != '' ">remark,</if>
+            create_time,
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null and id != ''">#{id},</if>
+			<if test="deviceId != null and deviceId != ''">#{deviceId},</if>
+			<if test="deviceName != null and deviceName != ''">#{deviceName},</if>
+			<if test="deviceStatus != null and deviceStatus != ''">#{deviceStatus},</if>
+			<if test="deviceType != null and deviceType != ''">#{deviceType},</if>
+            <if test="deviceTag != null and deviceTag != ''">#{deviceTag},</if>
+            <if test="deviceGroupId != null and deviceGroupId != ''">#{deviceGroupId},</if>
+            <if test="deviceParam != null and deviceParam != ''">#{deviceParam},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+			<if test="delFlag != null and delFlag != ''">#{delFlag},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            sysdate(),
+         </trim>
+    </insert>
+	 
+    <update id="updateDevice" parameterType="Device">
+        update bu_device
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deviceId != null  and deviceId != ''  ">device_id = #{deviceId},</if>
+            <if test="deviceName != null  and deviceName != ''  ">device_name = #{deviceName},</if>
+            <if test="deviceStatus != null  and deviceStatus != ''  ">device_status = #{deviceStatus},</if>
+            <if test="deviceType != null  and deviceType != ''  ">device_type = #{deviceType},</if>
+            <if test="deviceTag != null  and deviceTag != ''  ">device_tag = #{deviceTag},</if>
+            <if test="deviceGroupId != null  ">device_group_id = #{deviceGroupId},</if>
+            <if test="deviceParam != null  ">device_param = #{deviceParam},</if>
+            <if test="updateBy != null  and updateBy != ''  ">update_by = #{updateBy},</if>
+            <if test="remark != null  and remark != ''  ">remark = #{remark},</if>
+            update_time = sysdate(),
+        </trim>
+        where id = #{id}
+    </update>
+
+	<delete id="deleteDeviceById" parameterType="Long">
+        delete from bu_device where id = #{id}
+    </delete>
+	
+    <delete id="deleteDeviceByIds" parameterType="Long">
+        update  bu_device  set del_flag = '2'  where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>
